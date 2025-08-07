@@ -462,6 +462,51 @@ Make sure to merge your master branch into your feature branch before continuing
 > [!NOTE]
 > Observe that these gitspaces instances are already configured with git credentials from Harness Open Source so you don't have to configure git credentials.
 
+## Artifact Registry
+
+In this section, you'll create a local Docker artifact registry using Harness Open Source. This registry will be used to push container images from your local machine and later from CI pipelines.
+
+### Create an Artifact Registry
+
+1. Navigate to **Artifact Registries --> + New Artifact Registry** and create a new docker artifact registry named "harness-reg".
+2. In the registry settings, click **Set up client** to retrieve the connection credentials to that registry. Make a note of the username.
+3. Click **Generate token** and make a note of the token.
+
+### Authenticate Docker Locally
+
+You’ll now log in to the registry using credentials shown on the **Docker Client Setup** page.
+
+> ⚠️ Make sure you're using `host.docker.internal:3000` instead of any other IP (like `172.17.0.1`), because this was added to your Docker daemon's insecure registries.
+
+Run the following in your terminal:
+
+```bash
+docker login host.docker.internal:3000
+```
+
+When prompted, use the same username and token you copied from the Docker Client Setup screen.
+
+You should see:
+
+```
+Login Succeeded
+```
+
+### Push a Sample Docker Image
+Let’s verify the registry works by pushing an image manually:
+
+```
+# Pull a public image
+docker pull nginx:latest
+
+# Tag the image to match the Harness registry path
+docker tag nginx:latest host.docker.internal:3000/harness-lab/harness-reg/nginx:demo
+
+# Push it to the registry
+docker push host.docker.internal:3000/harness-lab/harness-reg/nginx:demo
+```
+You should see the layers upload and complete successfully.
+
 ## Pipeline
 
 ### Create a New Pipeline
@@ -469,14 +514,6 @@ Make sure to merge your master branch into your feature branch before continuing
 1. In the podinfo repository, go to **Pipelines** and click **+ New Pipeline**.
 2. Click "Generate" to let Harness automatically create a pipeline for your Go project. This pipeline should install dependencies, build the app, and run tests.
 3. Click "Save and Run" to execute the pipeline and ensure all steps complete successfully.
-
-## Artifact Registry
-
-### Create an Artifact Registry
-
-1. Navigate to **Artifact Registries --> + New Artifact Registry** and create a new docker artifact registry named "harness-reg".
-2. In the registry settings, click **Set up client** to retrieve the connection credentials to that registry. Make a note of the username.
-3. Click **Generate token** and make a note of the token.
 
 ### Add Secrets
 
@@ -619,6 +656,95 @@ spec:
                 echo "Image scan completed!"
       type: ci
   version: 1
+```
+
+### Add Attestation with Cosign
+
+Harness supports [temporary volumes](https://developer.harness.io/docs/open-source/pipelines/volumes) in pipelines to persist files across steps. In this section, you'll generate an attestation log, sign it using cosign, and then verify the signature.
+
+Click on **Pipelines** --> **+ New Pipeline** and add the following to your pipeline YAML:
+
+```YAML
+pipeline:
+version: 1
+kind: pipeline
+spec:
+  stages:
+    - name: attest-sign-verify
+      type: ci
+      spec:
+        platform:
+          os: linux
+          arch: amd64
+        volumes:
+          - name: attest-volume
+            type: temp
+            spec: {}
+        steps:
+          - name: generate_attestation_log
+            type: run
+            spec:
+              container: alpine
+              mount:
+                - name: attest-volume
+                  path: /mnt/attest
+              script: |
+                echo "Build number: ${{ build.number }}" > /mnt/attest/attestation.log
+                echo "Build commit: ${{ build.commit }}" >> /mnt/attest/attestation.log
+                echo "Timestamp: $(date -u)" >> /mnt/attest/attestation.log
+
+          - name: sign_attestation_log
+            type: run
+            spec:
+              container: alpine
+              mount:
+                - name: attest-volume
+                  path: /mnt/attest
+              script: |
+                apk add --no-cache curl jq
+                curl -sSL https://github.com/sigstore/cosign/releases/latest/download/cosign-linux-amd64 -o /usr/local/bin/cosign
+                chmod +x /usr/local/bin/cosign
+
+                echo "🔐 Generating cosign keypair..."
+                COSIGN_PASSWORD="" cosign generate-key-pair
+
+                # Move the keys to the volume
+                mv cosign.key /mnt/attest/cosign.key
+                mv cosign.pub /mnt/attest/cosign.pub
+
+                echo "🔐 Signing attestation log..."
+                cosign sign-blob \
+                  --key /mnt/attest/cosign.key \
+                  --tlog-upload=false \
+                  /mnt/attest/attestation.log > /mnt/attest/attestation.sig
+
+                echo "📄 Attestation:"
+                cat /mnt/attest/attestation.log
+
+                echo "🧾 Signature:"
+                cat /mnt/attest/attestation.sig
+
+          - name: verify_signature
+            type: run
+            spec:
+              container: alpine
+              mount:
+                - name: attest-volume
+                  path: /mnt/attest
+              script: |
+                apk add --no-cache curl jq
+                curl -sSL https://github.com/sigstore/cosign/releases/latest/download/cosign-linux-amd64 -o /usr/local/bin/cosign
+                chmod +x /usr/local/bin/cosign
+
+                echo "🔍 Verifying attestation signature (offline)..."
+                                cosign verify-blob \
+                                  --key /mnt/attest/cosign.pub \
+                                  --signature /mnt/attest/attestation.sig \
+                                  --insecure-ignore-tlog \
+                                  /mnt/attest/attestation.log
+
+
+                echo "✅ Verification successful"
 ```
 
 ### Update default trigger
