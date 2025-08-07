@@ -129,6 +129,20 @@ k3d kubeconfig get podinfo | sed 's/0.0.0.0/host.docker.internal/g' | xsel --cli
 3. Use `harness-community` for the organization and `podinfo` for the repository.
 4. Click **Import Repository**.
 
+#### Create Repository Labels
+
+1. Go to **Manage Repository** → **Labels**.
+
+2. Click **+ New Label** and add:
+
+- dev (any color)
+
+- staging
+
+- prod
+
+These will help tag pull requests, branches, and artifacts in later steps.
+
 ### Webhook
 
 You can send data to HTTP endpoints from actions in your repository, such as opened pull requests, new branches, and more. For this exercise, you’ll use [webhook.site](https://webhook.site) - a website that offers unique, random URLs to instantly receive and inspect all incoming HTTP requests and webhooks in real-time, facilitating testing and debugging. For free webhook.site users, the URL and its data are kept for 7 days. You can close the browser tab and still return to the same unique webhook.site URL.
@@ -248,6 +262,124 @@ git config -–global user.name “admin”
 Now save the `config.yaml` file and try to commit and push the changes. Use the Git credentials you copied earlier. The built-in scanner in Harness will detect the pattern and prevent you from pushing the commit.
 
 This approach is much safer than detecting secrets after they've been committed.
+
+### Set Up CODEOWNERS
+To enforce ownership and approvals for specific parts of the repo, create a `.harness/CODEOWNERS` file.
+
+1. In the podinfo repo, create a new file `.harness/CODEOWNERS` and add this content:
+
+```
+*.go @admin
+pkg/version/* @admin
+```
+2. Commit and push this directly to the master branch:
+
+```
+git checkout master
+git pull
+git add .harness/CODEOWNERS
+git commit -m "Add CODEOWNERS file"
+git push
+```
+
+> ⚠️ **Note**  
+> This should be done from the `admin` user account.
+
+### Configure Branch Protection Rules
+
+To enforce reviews and safe collaboration, set rules for the master branch:
+
+1. Go to **Repositories** → podinfo → **Manage Repository** → **Rules**
+
+2. Click **+ New Rule**
+
+3. Fill out the rules:
+
+✅ Enable
+
+Name: `protect-master`
+
+Target Pattern: `master`
+
+Under "Rules", enable:
+
+✅ Require pull request
+
+✅ Require review from code owners
+
+✅ Require approval of new changes
+
+✅ Require resolution of change requests
+
+✅ Require a minimum number of reviewers: 1
+
+✅ Require status checks to pass (optional, depending on pipeline setup)
+
+✅ Block force push
+
+✅ Auto delete branch on merge
+
+4. Save the rule.
+
+Now, any direct change to master is blocked unless it follows the PR process and passes review.
+
+#### Add a dev User
+Next, let’s add a developer role for testing PR workflows.
+
+1. Navigate to Members
+
+2. Click **+ New User**
+
+3. Create a user:
+
+Username: `dev`
+
+Email: `dev@example.com`
+
+Role: `Developer`
+
+4. Log in using this new account in an incognito window or separate browser session.
+
+5. Open a Pull Request as dev
+As the dev user, navigate to the podinfo repo.
+
+6. Create a new branch named `feature2`
+
+7. Modify any file (e.g., `pkg/version/version.go`)
+
+8. Commit and push changes to the feature branch
+
+9. Open a Pull Request:
+
+Source: `feature2`
+
+Target: `master`
+
+Title: `Update version`
+
+Add label: `dev`
+
+You'll notice:
+
+PR merge is blocked
+
+Review from @admin is required (due to CODEOWNERS)
+
+You may also see status checks if pipelines are configured
+
+#### Approve and Merge as Admin
+
+1. Switch back to admin user
+
+2. Navigate to the open PR
+
+3. Review the change
+
+4. Click Approve
+
+5. Click Merge
+
+If auto-delete is enabled, the feature branch will be deleted after the merge.
 
 ## GitSpaces
 
