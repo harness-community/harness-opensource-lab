@@ -162,7 +162,7 @@ Now, continue to the next section to push a new branch. Once a new branch is pus
 
 ### Create a Branch to Trigger Webhook
 
-1. Within the podinfo repository, create a new branch named "feature".
+1. Within the podinfo repository, create a new branch named "feature1".
 2. On webhook.site, you should see a notification indicating that the webhook was triggered.
 
 The response will look something like this:
@@ -176,60 +176,72 @@ The response will look something like this:
     "identifier": "podinfo",
     "description": "",
     "default_branch": "master",
-    "url": "http://159.203.33.47:3000/harness-lab/podinfo",
-    "git_url": "http://159.203.33.47:3000/git/harness-lab/podinfo.git",
-    "git_ssh_url": "ssh://git@159.203.33.47:3022/harness-lab/podinfo.git",
+    "url": "http://localhost:3000/harness-lab/podinfo",
+    "git_url": "http://localhost:3000/git/harness-lab/podinfo.git",
+    "git_ssh_url": "ssh://git@localhost:3022/harness-lab/podinfo.git",
     "uid": "podinfo"
   },
   "principal": {
     "id": 4,
     "uid": "admin",
-    "display_name": "Administrator",
-    "email": "mail@example.com",
+    "display_name": "admin",
+    "email": "admin@example.com",
     "type": "user",
-    "created": 1724895740977,
-    "updated": 1724895740977
+    "created": 1754530131842,
+    "updated": 1754530131842
   },
   "ref": {
-    "name": "refs/heads/feature3",
+    "name": "refs/heads/feature1",
     "repo": {
       "id": 1,
       "path": "harness-lab/podinfo",
       "identifier": "podinfo",
       "description": "",
       "default_branch": "master",
-      "url": "http://159.203.33.47:3000/harness-lab/podinfo",
-      "git_url": "http://159.203.33.47:3000/git/harness-lab/podinfo.git",
-      "git_ssh_url": "ssh://git@159.203.33.47:3022/harness-lab/podinfo.git",
+      "url": "http://localhost:3000/harness-lab/podinfo",
+      "git_url": "http://localhost:3000/git/harness-lab/podinfo.git",
+      "git_ssh_url": "ssh://git@localhost:3022/harness-lab/podinfo.git",
       "uid": "podinfo"
     }
   },
-  "sha": "dbf831f84f486243998a2f86cda9fa76d9f1b748",
+  "sha": "b00ffa046c45eeda6664ae8b4a9d9c19628a1741",
   "head_commit": {
-    "sha": "dbf831f84f486243998a2f86cda9fa76d9f1b748",
-    "message": "Updated pipeline testpipe",
+    "sha": "b00ffa046c45eeda6664ae8b4a9d9c19628a1741",
+    "message": "Updated pipeline build-info-pipeline",
     "author": {
-      "identity": { "name": "Administrator", "email": "mail@example.com" },
-      "when": "2024-09-03T17:38:34Z"
+      "identity": {
+        "name": "admin",
+        "email": "admin@example.com"
+      },
+      "when": "2025-08-07T19:24:39Z"
     },
     "committer": {
-      "identity": { "name": "Gitness", "email": "system@gitness.io" },
-      "when": "2024-09-03T17:38:34Z"
+      "identity": {
+        "name": "Gitness",
+        "email": "system@gitness.io"
+      },
+      "when": "2025-08-07T19:24:39Z"
     },
     "added": [],
     "removed": [],
     "modified": []
   },
   "commit": {
-    "sha": "dbf831f84f486243998a2f86cda9fa76d9f1b748",
-    "message": "Updated pipeline testpipe",
+    "sha": "b00ffa046c45eeda6664ae8b4a9d9c19628a1741",
+    "message": "Updated pipeline build-info-pipeline",
     "author": {
-      "identity": { "name": "Administrator", "email": "mail@example.com" },
-      "when": "2024-09-03T17:38:34Z"
+      "identity": {
+        "name": "admin",
+        "email": "admin@example.com"
+      },
+      "when": "2025-08-07T19:24:39Z"
     },
     "committer": {
-      "identity": { "name": "Gitness", "email": "system@gitness.io" },
-      "when": "2024-09-03T17:38:34Z"
+      "identity": {
+        "name": "Gitness",
+        "email": "system@gitness.io"
+      },
+      "when": "2025-08-07T19:24:39Z"
     },
     "added": [],
     "removed": [],
