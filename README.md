@@ -2,7 +2,7 @@
 
 This lab will guide you through setting up and using Harness Open Source (referred to as "Harness" from now on), with a focus on managing a project, using GitSpaces, creating pipelines, and setting up an artifact registry. By the end of the lab, you'll be able to create a project, import a repository, work with GitSpaces, and automate build pipelines.
 
-## Prerequisites
+## Prerequisites and Setup
 
 Before starting, ensure you have the following installed on your local machine:
 
@@ -22,7 +22,7 @@ Configure insecure registries based on your docker daemon:
   ]
 ```
 
-## Harness Installation
+### Harness Installation
 
 1. Run the following command to start a Harness instance:
 
@@ -45,7 +45,7 @@ This command starts the Harness server, exposes it on port 3000, and mounts nece
    - Enter a User ID (`admin`), Email (`admin@example.com`), and Password (`changeit`).
    - Select **Sign Up**. (You might see a warning to change your password. You can ignore that warning.)
 
-## Kubernetes Cluster Setup
+### Kubernetes Cluster Setup
 
 1. Create a directory for the kubeconfig file:
 
@@ -129,7 +129,7 @@ k3d kubeconfig get podinfo | sed 's/0.0.0.0/host.docker.internal/g' | xsel --cli
 3. Use `harness-community` for the organization and `podinfo` for the repository.
 4. Click **Import Repository**.
 
-#### Create Repository Labels
+### Create Repository Labels
 
 1. Go to **Manage Repository** → **Labels**.
 
@@ -401,25 +401,33 @@ bash: go: command not found
 
 GitSpaces come with an Ubuntu image (`mcr.microsoft.com/devcontainers/base:dev-ubuntu-24.04`) if you don’t have a DevContainer file with a base image defined.
 
-In your gitspace, add the following file to your repo: `podinfo/files/master/~/.devcontainer/devcontainer.json`
+4. In your gitspace, add the following file to your repo: `podinfo/files/master/~/.devcontainer/devcontainer.json`
 
 ```
 {
-    "image": "mcr.microsoft.com/devcontainers/go"
+  "image": "mcr.microsoft.com/devcontainers/go",
+  "customizations": {
+    "vscode": {
+      "extensions": ["streetsidesoftware.code-spell-checker"]
+    }
+  }
 }
 ```
+This config installs the Go DevContainer and ensures that useful VS Code extensions — like the spell checker in this example — are pre-installed in Gitspaces when opened in the browser.
 
-Merge the changes.
+> 💡 You can find extension IDs from the “More Info” section of the extension’s Marketplace page.
 
-Stop and delete the GitSpace instance, then recreate it. Retry the above command, and this time, the Go build should succeed.
+5. Merge the changes.
 
-3. Run the app:
+6. Stop and delete the GitSpace instance, then recreate it. Retry the above command, and this time, the Go build should succeed.
+
+7. Run the app:
 
    ```bash
    ./podinfo
    ```
 
-4. Open another terminal within VS code and `curl localhost:9898` to see the app running version `6.6.1`:
+8. Open another terminal within VS code and `curl localhost:9898` to see the app running version `6.6.1`:
 
 ```json
 {
@@ -759,6 +767,28 @@ From the "feature" branch, create a new Pull Request (PR) to the "master" branch
 
 ## Deploy to Kubernetes
 
+### Kubeconform YAML Validation Step
+
+Add this before the deployment step:
+
+```YAML
+- name: validate_k8s_manifests
+  type: run
+  spec:
+    container: golang:1.21
+    script: |
+      echo "📦 Installing kubeconform..."
+      go install github.com/yannh/kubeconform/cmd/kubeconform@v0.4.13
+      export PATH=$PATH:$(go env GOPATH)/bin
+
+      echo "🔍 Validating Kubernetes manifests..."
+      kubeconform -strict -summary -output text deploy/webapp
+```
+
+> This ensures your manifests follow Kubernetes API schemas. It fails early if someone adds a typo or invalid config before even hitting the cluster.
+
+### Deploy to local k3d cluster
+
 Update the [pipeline](build-test-push-scan-deploy.yaml) as follows:
 
 ```YAML
@@ -820,7 +850,6 @@ spec:
                 KUBECONFIG: /tmp/kubeconfig.yaml
                 FRONTEND_IMAGE: host.docker.internal:3000/harness-lab/harness-reg/podinfo:${{ build.number }}
                 BACKEND_IMAGE: host.docker.internal:3000/harness-lab/harness-reg/podinfo:${{ build.number }}
-                DOCKER_CONFIG_JSON: ${{ secrets.get("docker-config-json") }}
                 DOCKER_USERNAME: ${{ secrets.get("docker_username") }}
                 DOCKER_PASSWORD: ${{ secrets.get("docker_password") }}
               script: |
@@ -836,7 +865,7 @@ spec:
                 # apply common manifests
                 kubectl apply -f ./webapp/common
 
-                # create a docker registry secrete yaml
+                # Create a Docker registry secret YAML
                 kubectl create secret docker-registry harness-registry-secret \
                   --docker-server=host.docker.internal:3000 \
                   --docker-username=$DOCKER_USERNAME \
@@ -931,7 +960,6 @@ spec:
                 KUBECONFIG: /tmp/kubeconfig.yaml
                 FRONTEND_IMAGE: host.docker.internal:3000/harness-lab/harness-reg/podinfo:${{ build.number }}
                 BACKEND_IMAGE: host.docker.internal:3000/harness-lab/harness-reg/podinfo:${{ build.number }}
-                DOCKER_CONFIG_JSON: ${{ secrets.get("docker-config-json") }}
                 DOCKER_USERNAME: ${{ secrets.get("docker_username") }}
                 DOCKER_PASSWORD: ${{ secrets.get("docker_password") }}
               script: |
@@ -947,7 +975,7 @@ spec:
                 # apply common manifests
                 kubectl apply -f ./webapp/common
 
-                # create a docker registry secrete yaml
+                # Create a Docker registry secret YAML
                 kubectl create secret docker-registry harness-registry-secret \
                   --docker-server=host.docker.internal:3000 \
                   --docker-username=$DOCKER_USERNAME \
