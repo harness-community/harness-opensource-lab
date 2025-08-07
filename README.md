@@ -264,6 +264,7 @@ Now save the `config.yaml` file and try to commit and push the changes. Use the 
 This approach is much safer than detecting secrets after they've been committed.
 
 ### Set Up CODEOWNERS
+
 To enforce ownership and approvals for specific parts of the repo, create a `.harness/CODEOWNERS` file.
 
 1. In the podinfo repo, create a new file `.harness/CODEOWNERS` and add this content:
@@ -272,6 +273,7 @@ To enforce ownership and approvals for specific parts of the repo, create a `.ha
 *.go @admin
 pkg/version/* @admin
 ```
+
 2. Commit and push this directly to the master branch:
 
 ```
@@ -324,6 +326,7 @@ Under "Rules", enable:
 Now, any direct change to master is blocked unless it follows the PR process and passes review.
 
 #### Add a dev User
+
 Next, let’s add a developer role for testing PR workflows.
 
 1. Navigate to Members
@@ -341,7 +344,7 @@ Role: `Developer`
 4. Log in using this new account in an incognito window or separate browser session.
 
 5. Open a Pull Request as dev
-As the dev user, navigate to the podinfo repo.
+   As the dev user, navigate to the podinfo repo.
 
 6. Create a new branch named `feature2`
 
@@ -413,6 +416,7 @@ GitSpaces come with an Ubuntu image (`mcr.microsoft.com/devcontainers/base:dev-u
   }
 }
 ```
+
 This config installs the Go DevContainer and ensures that useful VS Code extensions — like the spell checker in this example — are pre-installed in Gitspaces when opened in the browser.
 
 > 💡 You can find extension IDs from the “More Info” section of the extension’s Marketplace page.
@@ -501,6 +505,7 @@ Login Succeeded
 ```
 
 ### Push a Sample Docker Image
+
 Let’s verify the registry works by pushing an image manually:
 
 ```
@@ -513,6 +518,7 @@ docker tag nginx:latest host.docker.internal:3000/harness-lab/harness-reg/nginx:
 # Push it to the registry
 docker push host.docker.internal:3000/harness-lab/harness-reg/nginx:demo
 ```
+
 You should see the layers upload and complete successfully.
 
 ## Pipeline
@@ -841,6 +847,17 @@ spec:
                 curl -sSfL https://raw.githubusercontent.com/anchore/grype/main/install.sh | sh -s -- -b /tmp/grype-bin
                 /tmp/grype-bin/grype host.docker.internal:3000/harness-lab/harness-reg/podinfo:${{ build.number }}
                 echo "Image scan completed!"
+          - name: validate_k8s_manifests
+            type: run
+            spec:
+              container: golang:1.21
+              script: |
+                echo "📦 Installing kubeconform..."
+                go install github.com/yannh/kubeconform/cmd/kubeconform@v0.4.13
+                export PATH=$PATH:$(go env GOPATH)/bin
+
+                echo "🔍 Validating Kubernetes manifests..."
+                kubeconform -strict -summary -output text deploy/webapp
           - name: deploy
             type: run
             spec:
@@ -951,6 +968,17 @@ spec:
                 curl -sSfL https://raw.githubusercontent.com/anchore/grype/main/install.sh | sh -s -- -b /tmp/grype-bin
                 /tmp/grype-bin/grype host.docker.internal:3000/harnes-lab/harness-reg/podinfo:${{ build.number }}
                 echo "Image scan completed!"
+          - name: validate_k8s_manifests
+            type: run
+            spec:
+              container: golang:1.21
+              script: |
+                echo "📦 Installing kubeconform..."
+                go install github.com/yannh/kubeconform/cmd/kubeconform@v0.4.13
+                export PATH=$PATH:$(go env GOPATH)/bin
+
+                echo "🔍 Validating Kubernetes manifests..."
+                kubeconform -strict -summary -output text deploy/webapp
           - name: deploy
             type: run
             spec:
