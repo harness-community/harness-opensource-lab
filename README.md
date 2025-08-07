@@ -91,7 +91,7 @@ options:
 k3d cluster create -c /tmp/k3d/config.yaml
 ```
 
-5. Copy the kubeconfig to the clipboard and save it temporarily:
+1. Copy the kubeconfig to the clipboard:
 
 For macOS:
 
@@ -110,6 +110,8 @@ OR
 ```bash
 k3d kubeconfig get podinfo | sed 's/0.0.0.0/host.docker.internal/g' | xsel --clipboard
 ```
+
+From **Secrets**, click **+ New Secret**, name the secret `kubeconfig`, and paste the value from your clipboard.
 
 ## Project and Repository
 
@@ -535,7 +537,6 @@ You should see the layers upload and complete successfully.
 2. Add three secrets:
    - `docker_username`: Use the registry username from the previous step. For most cases, this would be **admin**.
    - `docker_password`: Use the generated token from the previous step.
-   - `kubeconfig`: Use the kubeconfig copied from a previous section.
 
 ### Create a Pipeline for Build, Test, and Push
 
