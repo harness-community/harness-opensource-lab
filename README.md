@@ -251,6 +251,64 @@ The response will look something like this:
   "forced": false
 }
 ```
+### Verify Committer Identity
+
+1. In Harness, navigate to your repository:
+   **Repositories → podinfo → Manage Repository → Security**
+
+2. Toggle **“Verify Committer Identity”** ON.
+
+3. Click **Save**.
+
+This setting will block any commit where the **committer’s email does not match** the authenticated user’s email in Harness.
+
+#### Test a commit with mismatched email
+
+Let’s simulate a mismatch:
+
+```bash
+# Set an incorrect email and name
+git config user.email "random@example.com"
+git config user.name "Not Admin"
+```
+
+Make a small change (e.g., add a comment or whitespace), then:
+
+```bash
+git commit -am "Test push with wrong identity"
+git push
+```
+
+You should see an error like:
+
+```
+Push contains commits where committer is not the authenticated user (admin@example.com)
+```
+
+#### Push again with correct identity
+
+Now configure Git to use the correct identity (matching your Harness user account):
+
+```bash
+git config user.email "admin@example.com"
+git config user.name "admin"
+```
+
+Then fix the commit’s author info:
+
+```bash
+git commit --amend --reset-author --no-edit
+git push 
+```
+
+Or,
+
+```bash
+git commit --amend --reset-author --no-edit
+git push --force
+```
+
+This time the push should succeed, since the email matches your authenticated Harness identity.
 
 ### Secret Detection
 
