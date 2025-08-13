@@ -7,7 +7,7 @@ This lab will guide you through setting up and using Harness Open Source (referr
 Before starting, ensure you have the following installed on your local machine:
 
 - Docker runtime and client (Docker Desktop, Rancher Desktop, or Colima)
-- VS Code (optional but recommended for working with GitSpaces)
+- VS Code. Please install **Harness OSS Gitspaces** extension from [marketplace](https://marketplace.visualstudio.com/items?itemName=harness-inc.oss-gitspaces)
 - [k3d](https://k3d.io/) for a local Kubernetes cluster
 - [kubectl](https://formulae.brew.sh/formula/kubernetes-cli) for interacting with the Kubernetes cluster
 
@@ -251,6 +251,7 @@ The response will look something like this:
   "forced": false
 }
 ```
+
 ### Verify Committer Identity
 
 1. In Harness, navigate to your repository:
@@ -298,7 +299,7 @@ Then fix the commit’s author info:
 
 ```bash
 git commit --amend --reset-author --no-edit
-git push 
+git push
 ```
 
 Or,
@@ -460,9 +461,13 @@ If auto-delete is enabled, the feature branch will be deleted after the merge.
 
 ### Create a GitSpace for VS Code Desktop
 
-1. Create a GitSpace for the `podinfo/master` branch and open it in VS Code Desktop.
-2. You will need to create a token and add it to the Gitness extension on VSCode. To do so, click **Admin** and then **+ New Token**.
-3. Build the binary for podinfo by running:
+1. From **Gitspaces** --> **Get Started Now**, create a GitSpace for the `podinfo/master` branch (under **Harness Repositories**).
+2. You will need to create a token and add it to the Gitness extension on VSCode. To do so, click **Admin** and then **+ New Token**. Give this token a name and set an expiration. Copy the token to your clipboard.
+3. From your project **harness-lab** --> **Gitspaces** --> **harness-lab/podinfo**, click **Open VS Code Editor**. Depending on your network, setting up the GitSpace might take up to a minute, so the button will be greyed out until then.
+4. From **Harness OSS Gitspaces Settings** --> paste the token under **Gitness token** field. You should see the Gitspace appear.
+5. Click the Gitspace to open it by copying the generated password, replying "Continue" to the prompt, and then providing the password.
+6. Inspect that a `.devcontainer/devcontainer.json` file was generated for you.
+7. From **Terminal** --> **New Terminal**, build the binary for podinfo by running:
 
    ```bash
    go build ./cmd/podinfo
@@ -476,34 +481,25 @@ bash: go: command not found
 
 GitSpaces come with an Ubuntu image (`mcr.microsoft.com/devcontainers/base:dev-ubuntu-24.04`) if you don’t have a DevContainer file with a base image defined.
 
-4. In your gitspace, add the following file to your repo: `podinfo/files/master/~/.devcontainer/devcontainer.json`
+8. In your gitspace, add the following file to your repo: `podinfo/files/master/~/.devcontainer/devcontainer.json`
 
 ```
 {
-  "image": "mcr.microsoft.com/devcontainers/go",
-  "customizations": {
-    "vscode": {
-      "extensions": ["streetsidesoftware.code-spell-checker"]
-    }
-  }
+  "image": "mcr.microsoft.com/devcontainers/go"
 }
 ```
 
-This config installs the Go DevContainer and ensures that useful VS Code extensions — like the spell checker in this example — are pre-installed in Gitspaces when opened in the browser.
+9. Merge the changes.
 
-> 💡 You can find extension IDs from the “More Info” section of the extension’s Marketplace page.
+10. Stop and delete the GitSpace instance, then recreate it. You’ll notice that when starting the GitSpace, the container logs show the Go image instead of the default Ubuntu one. Retry the above `go build...` command, and this time it should succeed.
 
-5. Merge the changes.
+11. Run the app:
 
-6. Stop and delete the GitSpace instance, then recreate it. Retry the above command, and this time, the Go build should succeed.
+```bash
+./podinfo
+```
 
-7. Run the app:
-
-   ```bash
-   ./podinfo
-   ```
-
-8. Open another terminal within VS code and `curl localhost:9898` to see the app running version `6.6.1`:
+12. Open another terminal within VS code and `curl localhost:9898` to see the app running version `6.6.1`:
 
 ```json
 {
@@ -525,23 +521,24 @@ This config installs the Go DevContainer and ensures that useful VS Code extensi
 
 Make sure to merge your master branch into your feature branch before continuing.
 
-1. Create a gitspaces for the `podinfo/feature` branch and open it in VS Code Browser.
-2. Make a change to `pkg/version/version.go` and update the version to **6.6.2**. Save the file.
-3. Build the binary for podinfo by running:
+1. From **Repositories** --> **podinfo**, create a new branch `gitspace-feature`.
+2. From **Gitspaces** --> **Create Gitspace**, select `harness-lab/podinfo` and `VS Code Browser` for the **IDE**. Create a gitspaces for the `podinfo/gitspace-feature` branch and open it in VS Code Browser.
+3. Make a change to `pkg/version/version.go` and update the version to **6.6.2**. Save the file.
+4. Build the binary for podinfo by running:
 
    ```bash
    go build ./cmd/podinfo
    ```
 
-4. Run the app:
+5. Run the app:
 
    ```bash
    ./podinfo
    ```
 
-5. Open your browser and navigate to [http://localhost:9898](http://localhost:9898) to see the app running version `6.6.2`.
+6. Open your browser and navigate to [http://localhost:9898](http://localhost:9898) to see the app running version `6.6.2`.
 
-6. Commit and push the change to feature branch.
+7. Commit and push the change to feature branch.
 
 > [!NOTE]
 > Observe that these gitspaces instances are already configured with git credentials from Harness Open Source so you don't have to configure git credentials.
