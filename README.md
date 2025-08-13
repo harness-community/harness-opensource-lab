@@ -1,6 +1,6 @@
 # harness-lab
 
-This lab will guide you through setting up and using Harness Open Source (referred to as "Harness" from now on), with a focus on managing a project, using GitSpaces, creating pipelines, and setting up an artifact registry. By the end of the lab, you'll be able to create a project, import a repository, work with GitSpaces, and automate build pipelines.
+This lab will guide you through setting up and using Harness Open Source (referred to as "Harness" from now on), with a focus on managing a project, using Gitspaces, creating pipelines, and setting up an artifact registry. By the end of the lab, you'll be able to create a project, import a repository, work with Gitspaces, and automate build pipelines.
 
 ## Prerequisites and Setup
 
@@ -398,7 +398,7 @@ Under "Rules", enable:
 
 Now, any direct change to master is blocked unless it follows the PR process and passes review.
 
-## GitSpaces
+## Gitspaces
 
 ### Create a GitSpace for VS Code Desktop
 
@@ -422,7 +422,7 @@ bash: go: command not found
 
 GitSpaces come with an Ubuntu image (`mcr.microsoft.com/devcontainers/base:dev-ubuntu-24.04`) if you don’t have a DevContainer file with a base image defined.
 
-8. In your gitspace, add the following file to your repo: `podinfo/files/master/~/.devcontainer/devcontainer.json`
+8. In your Gitspace, add the following file to your repo: `podinfo/files/master/~/.devcontainer/devcontainer.json`
 
 ```
 {
@@ -458,31 +458,9 @@ GitSpaces come with an Ubuntu image (`mcr.microsoft.com/devcontainers/base:dev-u
 }
 ```
 
-### Create gitspaces for VS Code Browser
+### Create Gitspaces for other IDEs
 
-Make sure to merge your master branch into your feature branch before continuing.
-
-1. From **Repositories** --> **podinfo**, create a new branch `gitspace-feature`.
-2. From **Gitspaces** --> **Create Gitspace**, select `harness-lab/podinfo` and `VS Code Browser` for the **IDE**. Create a gitspaces for the `podinfo/gitspace-feature` branch and open it in VS Code Browser.
-3. Make a change to `pkg/version/version.go` and update the version to **6.6.2**. Save the file.
-4. Build the binary for podinfo by running:
-
-   ```bash
-   go build ./cmd/podinfo
-   ```
-
-5. Run the app:
-
-   ```bash
-   ./podinfo
-   ```
-
-6. Open your browser and navigate to [http://localhost:9898](http://localhost:9898) to see the app running version `6.6.2`.
-
-7. Commit and push the change to feature branch.
-
-> [!NOTE]
-> Observe that these gitspaces instances are already configured with git credentials from Harness Open Source so you don't have to configure git credentials.
+Similarly, you can create Gitspaces for other IDEs, including VS Code Browser, IntelliJ IDEA, GoLang, and more.
 
 ## Artifact Registry
 
