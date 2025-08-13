@@ -366,7 +366,7 @@ To enforce reviews and safe collaboration, set rules for the master branch:
 
 1. Go to **Repositories** → podinfo → **Manage Repository** → **Rules**
 
-2. Click **+ New Rule**
+2. Click **+ New Branch Rule**
 
 3. Fill out the rules:
 
@@ -397,65 +397,6 @@ Under "Rules", enable:
 4. Save the rule.
 
 Now, any direct change to master is blocked unless it follows the PR process and passes review.
-
-#### Add a dev User
-
-Next, let’s add a developer role for testing PR workflows.
-
-1. Navigate to Members
-
-2. Click **+ New User**
-
-3. Create a user:
-
-Username: `dev`
-
-Email: `dev@example.com`
-
-Role: `Developer`
-
-4. Log in using this new account in an incognito window or separate browser session.
-
-5. Open a Pull Request as dev
-   As the dev user, navigate to the podinfo repo.
-
-6. Create a new branch named `feature2`
-
-7. Modify any file (e.g., `pkg/version/version.go`)
-
-8. Commit and push changes to the feature branch
-
-9. Open a Pull Request:
-
-Source: `feature2`
-
-Target: `master`
-
-Title: `Update version`
-
-Add label: `dev`
-
-You'll notice:
-
-PR merge is blocked
-
-Review from @admin is required (due to CODEOWNERS)
-
-You may also see status checks if pipelines are configured
-
-#### Approve and Merge as Admin
-
-1. Switch back to admin user
-
-2. Navigate to the open PR
-
-3. Review the change
-
-4. Click Approve
-
-5. Click Merge
-
-If auto-delete is enabled, the feature branch will be deleted after the merge.
 
 ## GitSpaces
 
